@@ -1,4 +1,4 @@
-package com.example.taskmanager.ui.theme
+package com.example.taskmanager.uiView.themes
 
 import android.app.Activity
 import android.os.Build
