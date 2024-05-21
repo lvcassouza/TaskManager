@@ -2,6 +2,7 @@ package com.example.taskmanager.repository
 
 import android.app.Application
 import androidx.lifecycle.*
+import androidx.lifecycle.liveData
 import com.example.taskmanager.dataModel.Category
 import com.example.taskmanager.dataModel.Task
 import com.example.taskmanager.dataModel.TaskDatabase
@@ -16,7 +17,6 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     val allTasks: LiveData<List<Task>> = liveData {
         emitSource(repository.allTasks)
     }
-
     private val _taskId = MutableLiveData<Int>()
     val task: LiveData<Task?> = _taskId.switchMap { taskId -> repository.getTaskById(taskId) }
 
@@ -52,4 +52,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getTask(taskId: Int): Task? = withContext(Dispatchers.IO) {
         repository.getTaskById(taskId).value
     }
+//    fun getTaskById(taskId: Int): LiveData<Task?> = liveData {
+//        emit(repository.getTaskById(taskId))
+//    }
 }

@@ -2,7 +2,6 @@ package com.example.taskmanager.dataModel
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import androidx.room.Delete
 
 @Dao
 interface TaskDao {

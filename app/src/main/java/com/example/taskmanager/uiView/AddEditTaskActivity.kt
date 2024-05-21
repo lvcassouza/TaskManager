@@ -17,8 +17,8 @@ class AddEditTaskActivity : AppCompatActivity() {
     private lateinit var editTextDescription: EditText
     private lateinit var buttonSave: Button
     private lateinit var taskViewModel: TaskViewModel
-    private var taskId = -1 // Initialize taskId outside onCreate
-    private var isNewTask: Boolean = false
+    private var taskId: Int = -1
+    private var isNewTask: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,31 +27,25 @@ class AddEditTaskActivity : AppCompatActivity() {
         // Initialize ViewModel
         taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
+        // Get taskId from intent
+        taskId = intent.getIntExtra("TASK_ID", -1)
+
         // Initialize views
         editTextTitle = findViewById(R.id.edit_text_title)
         editTextDescription = findViewById(R.id.edit_text_description)
         buttonSave = findViewById(R.id.button_save)
 
-        // Get taskId from intent
-        taskId = intent.getIntExtra("TASK_ID", -1)
 
         if (taskId != -1) {
             isNewTask = false
-            lifecycleScope.launch { // Launch coroutine in lifecycleScope
-                val task = taskViewModel.getTask(taskId) // Fetch task synchronously
+            lifecycleScope.launch { // Fetch existing task in a coroutine
+                val task = taskViewModel.getTask(taskId)
                 task?.let {
                     editTextTitle.setText(it.title)
                     editTextDescription.setText(it.description)
+                } ?: run {
+                    // Handle case where task is null (show error, etc.)
                 }
-            }
-        } else {
-            isNewTask = true // This is a new task
-        }
-
-        taskViewModel.task.observe(this) { task ->
-            task?.let { // Only proceed if task is not null
-                editTextTitle.setText(it.title)
-                editTextDescription.setText(it.description)
             }
         }
 

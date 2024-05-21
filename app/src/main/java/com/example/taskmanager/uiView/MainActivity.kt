@@ -4,65 +4,88 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.* // Import for layout components
-import androidx.compose.foundation.lazy.LazyColumn // Import for LazyColumn
-import androidx.compose.foundation.lazy.items // Import for LazyColumn's items
-import androidx.compose.material3.* // Import for Material Design components
-import androidx.compose.runtime.* // Import for state management
-import androidx.compose.runtime.livedata.observeAsState // Import for observeAsState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskmanager.dataModel.Task
+import com.example.taskmanager.repository.TaskItem
+import com.example.taskmanager.repository.TaskList
 import com.example.taskmanager.repository.TaskViewModel
 import com.example.taskmanager.uiView.themes.TaskManagerTheme
+import androidx.navigation.NavHostController // Add for navController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val taskViewModel =
-            ViewModelProvider(this)[TaskViewModel::class.java] // Get ViewModel instance
-
         setContent {
             TaskManagerTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    TaskList(taskViewModel = taskViewModel)
-                }
+                // Surface and navController moved to AppNavigation
+                AppNavigation()
             }
         }
     }
 }
 
-// TaskList Composable Function
 @Composable
-fun TaskList(taskViewModel: TaskViewModel) {
-    val tasks by taskViewModel.allTasks.observeAsState(initial = emptyList())
+fun AppNavigation() {
+    val navController = rememberNavController()
+    val taskViewModel: TaskViewModel = viewModel()
 
-    LazyColumn {
-        items(tasks) { task ->
-            TaskItem(task = task)
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        NavHost(navController = navController, startDestination = "task_list") {
+            // Route for TaskListScreen
+            composable("add_edit_task/{taskId}") { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getString("taskId")?.toIntOrNull() ?: -1
+                AddEditTaskScreen(navController, taskViewModel, taskId)
+            }
+            // Other routes can be added here for different screens
         }
     }
 }
 
-// TaskItem Composable Function (Example)
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaskListScreen(navController: NavHostController, taskViewModel: TaskViewModel) {
+    val tasks by taskViewModel.allTasks.observeAsState(initial = emptyList())
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate("add_edit_task") }) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Task")
+            }
+        }
+    ) { innerPadding ->
+        LazyColumn(contentPadding = innerPadding) {
+            items(tasks) { task ->
+                TaskItem(task = task)
+            }
+        }
+    }
+}
+
+
 @Composable
 fun TaskItem(task: Task) {
-    Card(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = task.title, style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = task.description, style = MaterialTheme.typography.bodyMedium)
-        }
+        Text(text = task.title, style = MaterialTheme.typography.headlineSmall)
+        Text(text = task.description, style = MaterialTheme.typography.bodyMedium)
+        // ... (add other task details like due date, completion status, etc.)
     }
 }
