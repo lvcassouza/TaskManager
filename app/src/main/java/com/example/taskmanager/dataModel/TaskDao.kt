@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface TaskDao {
@@ -11,7 +12,12 @@ interface TaskDao {
     fun getAllTasks(): LiveData<List<Task>>
 
     @Insert
-    suspend fun insertTask(task: Task)
+    fun insertTask(task: Task)
 
-    // Outros métodos (update, delete)
+    @Query("SELECT * FROM task_table WHERE id = :taskId")
+    fun getTaskById(taskId: Int): LiveData<Task?>
+
+    @Update
+    suspend fun update(task: Task) // Add this update method
+
 }
