@@ -1,10 +1,8 @@
 package com.example.taskmanager.dataModel
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
+import androidx.room.Delete
 
 @Dao
 interface TaskDao {
@@ -12,12 +10,29 @@ interface TaskDao {
     fun getAllTasks(): LiveData<List<Task>>
 
     @Insert
-    fun insertTask(task: Task)
+    fun insertTask(task: Task): Long
 
-    @Query("SELECT * FROM task_table WHERE id = :taskId")
+    @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTaskById(taskId: Int): LiveData<Task?>
 
     @Update
-    suspend fun update(task: Task) // Add this update method
+    fun update(task: Task): Int
 
+    @Delete
+    fun deleteTask(task: Task)
+}
+
+@Dao
+interface CategoryDao {
+    @Query("SELECT * FROM categories")
+    fun getAllCategories(): LiveData<List<Category>>
+
+    @Insert
+    fun insertCategory(category: Category): Long
+
+    @Delete
+    fun deleteCategory(category: Category)
+
+    @Query("SELECT * FROM categories WHERE id = :categoryId")
+    fun getCategoryById(categoryId: Int): LiveData<Category?>
 }

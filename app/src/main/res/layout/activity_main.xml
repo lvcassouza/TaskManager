@@ -15,8 +15,11 @@
         android:id="@+id/your_fab_add_task_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="16dp" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

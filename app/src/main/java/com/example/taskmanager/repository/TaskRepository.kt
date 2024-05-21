@@ -18,10 +18,10 @@ class TaskRepository(private val taskDao: TaskDao) {
     }
 
     suspend fun update(task: Task) {
-        withContext(Dispatchers.IO) {
-            taskDao.update(task)
-        }
+        taskDao.update(task)
     }
 
-    // Outros métodos (update, delete)
+    suspend fun deleteTask(task: Task) { // Add this method
+        taskDao.deleteTask(task)
+    }
 }

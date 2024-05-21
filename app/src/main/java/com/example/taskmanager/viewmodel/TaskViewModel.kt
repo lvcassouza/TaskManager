@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import com.example.taskmanager.dataModel.Category
 import com.example.taskmanager.dataModel.TaskDatabase
+import com.example.taskmanager.repository.CategoryRepository
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
     // ...
@@ -12,7 +13,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         // ...
-        val categoryDao = TaskDatabase.getDatabase(application).categoryDao()
+        val categoryDao = TaskDatabase.getInstance(application).categoryDao()
         categoryRepository = CategoryRepository(categoryDao)
     }
 

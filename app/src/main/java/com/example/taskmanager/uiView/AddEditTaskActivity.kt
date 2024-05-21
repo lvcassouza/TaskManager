@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.taskmanager.R
 import com.example.taskmanager.dataModel.Task
 import com.example.taskmanager.repository.TaskViewModel
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class AddEditTaskActivity : AppCompatActivity() {
 
@@ -16,30 +18,34 @@ class AddEditTaskActivity : AppCompatActivity() {
     private lateinit var buttonSave: Button
     private lateinit var taskViewModel: TaskViewModel
     private var taskId = -1 // Initialize taskId outside onCreate
+    private var isNewTask: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_edit_task)
+
+        // Initialize ViewModel
+        taskViewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
         // Initialize views
         editTextTitle = findViewById(R.id.edit_text_title)
         editTextDescription = findViewById(R.id.edit_text_description)
         buttonSave = findViewById(R.id.button_save)
 
-        // Initialize ViewModel
-        taskViewModel = ViewModelProvider(this).get(TaskViewModel::class.java)
-
         // Get taskId from intent
         taskId = intent.getIntExtra("TASK_ID", -1)
 
         if (taskId != -1) {
-            taskViewModel.setTaskId(taskId) // Trigger task fetching
-            taskViewModel.task.observe(this) { task ->
-                task?.let { // Only proceed if task is not null
+            isNewTask = false
+            lifecycleScope.launch { // Launch coroutine in lifecycleScope
+                val task = taskViewModel.getTask(taskId) // Fetch task synchronously
+                task?.let {
                     editTextTitle.setText(it.title)
                     editTextDescription.setText(it.description)
                 }
             }
+        } else {
+            isNewTask = true // This is a new task
         }
 
         taskViewModel.task.observe(this) { task ->
@@ -55,14 +61,15 @@ class AddEditTaskActivity : AppCompatActivity() {
             val description = editTextDescription.text.toString()
 
             if (title.isNotBlank()) {
-                val task = Task(title = title, description = description)
-                if (taskId == -1) {
+                // Create a new task object (avoids reassignment issue)
+                val newTask = Task(id = if (isNewTask) 0 else taskId, title = title, description = description)
+
+                if (isNewTask) {
                     // Insert a new task
-                    taskViewModel.insert(task)
+                    taskViewModel.insert(newTask)
                 } else {
                     // Update existing task
-                    task.id = taskId
-                    taskViewModel.update(task)
+                    taskViewModel.update(newTask)
                 }
                 finish() // Close the activity after saving
             } else {
